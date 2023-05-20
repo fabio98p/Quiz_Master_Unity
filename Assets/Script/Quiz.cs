@@ -9,12 +9,13 @@ public class Quiz : MonoBehaviour
 {
     [Header("Questions")]
     [SerializeField] TextMeshProUGUI questionText;
-    [SerializeField] QuestionSO question;
+    [SerializeField] List<QuestionSO> questions = new List<QuestionSO>();
+    QuestionSO currentQuestion;
 
     [Header("Answers")]
     [SerializeField] GameObject[] answerButtoms;
     int correctAnswerIndex;
-    bool hasAnsweredEarly;
+    bool hasAnsweredEarly = false;
 
     [Header("Button Colors")]
     [SerializeField] Sprite defaultAnswerSprite;
@@ -24,11 +25,14 @@ public class Quiz : MonoBehaviour
     [SerializeField] Image timerImage;
     Timer timer;
 
-
+    [Header("Scoring")]
+    [SerializeField] TextMeshProUGUI scoreText;
+    ScoreKeeper scoreKeeper;
 
     void Start()
     {
         timer = FindObjectOfType<Timer>();
+        scoreKeeper = FindObjectOfType<ScoreKeeper>();
         GetNextQuestion();
     }
 
@@ -53,42 +57,59 @@ public class Quiz : MonoBehaviour
         DisplayAnswer(i);
         SetButtonState(false);
         timer.CancelTimer();
+        scoreText.text = $"Score :{scoreKeeper.CalculateScore()}%";
     }
 
     void DisplayAnswer(int i)
     {
         Image buttonImage;
-        if (question.getCorrectAnswerIndex() == i)
+        if (currentQuestion.getCorrectAnswerIndex() == i)
         {
             questionText.text = "Correct";
             buttonImage = answerButtoms[i].GetComponent<Image>();
             buttonImage.sprite = correctAnswerSprite;
+            scoreKeeper.IncrementCorrectAnswers();
         }
         else
         {
-            string responseText = $"Sorry the right answer was:\n {question.getCorrectAnswer()}";
+            string responseText = $"Sorry the right answer was:\n {currentQuestion.getCorrectAnswer()}";
             questionText.text = responseText;
-            buttonImage = answerButtoms[question.getCorrectAnswerIndex()].GetComponent<Image>();
+            buttonImage = answerButtoms[currentQuestion.getCorrectAnswerIndex()].GetComponent<Image>();
             buttonImage.sprite = correctAnswerSprite;
         }
     }
 
     void GetNextQuestion()
     {
-        SetButtonState(true);
-        SetDefaultButtonSprite();
-        DisplayQuestion();
+        if (questions.Count > 0)
+        {
+            SetButtonState(true);
+            SetDefaultButtonSprite();
+            GetRandomQuerstion();
+            DisplayQuestion();
+            scoreKeeper.IncrementQuestionsSeen();
+        }
     }
 
+    void GetRandomQuerstion()
+    {
+        int index = Random.Range(0, questions.Count);
+        currentQuestion = questions[index];
+
+        if (questions.Contains(currentQuestion))
+        {
+            questions.Remove(currentQuestion);
+        }
+    }
     void DisplayQuestion()
     {
         //correctAnswerIndex = question.getCorrectAnswerIndex();
-        questionText.text = question.getQuestion();
+        questionText.text = currentQuestion.getQuestion();
 
         for (int i = 0; i < answerButtoms.Length; i++)
         {
             TextMeshProUGUI buttonText = answerButtoms[i].GetComponentsInChildren<TextMeshProUGUI>().FirstOrDefault();
-            buttonText.text = question.getAnswer(i);
+            buttonText.text = currentQuestion.getAnswer(i);
 
         }
     }

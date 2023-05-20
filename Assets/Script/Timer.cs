@@ -62,8 +62,6 @@ public class Timer : MonoBehaviour
                     break;
             }
         }
-
-        Debug.Log($"{questionState} : {timerValue} +  {fillFraction}");
     }
     public enum QuestionState
     {
