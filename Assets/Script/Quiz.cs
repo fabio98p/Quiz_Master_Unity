@@ -7,22 +7,55 @@ using UnityEngine.UI;
 
 public class Quiz : MonoBehaviour
 {
+    [Header("Questions")]
+    [SerializeField] TextMeshProUGUI questionText;
+    [SerializeField] QuestionSO question;
+
+    [Header("Answers")]
+    [SerializeField] GameObject[] answerButtoms;
+    int correctAnswerIndex;
+    bool hasAnsweredEarly;
+
+    [Header("Button Colors")]
     [SerializeField] Sprite defaultAnswerSprite;
     [SerializeField] Sprite correctAnswerSprite;
 
-    [SerializeField] TextMeshProUGUI questionText;
-    [SerializeField] QuestionSO question;
-    [SerializeField] GameObject[] answerButtoms;
+    [Header("Timer")]
+    [SerializeField] Image timerImage;
+    Timer timer;
 
 
-    int correctAnswerIndex;
 
     void Start()
     {
+        timer = FindObjectOfType<Timer>();
         GetNextQuestion();
-        //DisplayQuestion();
+    }
+
+    private void Update()
+    {
+        timerImage.fillAmount = timer.fillFraction;
+        if (timer.loadNextQuestion == true)
+        {
+            hasAnsweredEarly = false;
+            GetNextQuestion();
+            timer.loadNextQuestion = false;
+        }
+        else if (!hasAnsweredEarly && timer.questionState == Timer.QuestionState.WaitNextQuestion)
+        {
+            DisplayAnswer(-1);
+            SetButtonState(false);
+        }
     }
     public void OnAnswerSelected(int i)
+    {
+        hasAnsweredEarly = true;
+        DisplayAnswer(i);
+        SetButtonState(false);
+        timer.CancelTimer();
+    }
+
+    void DisplayAnswer(int i)
     {
         Image buttonImage;
         if (question.getCorrectAnswerIndex() == i)
@@ -38,8 +71,8 @@ public class Quiz : MonoBehaviour
             buttonImage = answerButtoms[question.getCorrectAnswerIndex()].GetComponent<Image>();
             buttonImage.sprite = correctAnswerSprite;
         }
-        SetButtonState(false);
     }
+
     void GetNextQuestion()
     {
         SetButtonState(true);
@@ -64,7 +97,7 @@ public class Quiz : MonoBehaviour
     {
         for (int i = 0; i < answerButtoms.Length; i++)
         {
-            Button button  = answerButtoms[i].GetComponent<Button>();
+            Button button = answerButtoms[i].GetComponent<Button>();
             button.interactable = state;
         }
     }
