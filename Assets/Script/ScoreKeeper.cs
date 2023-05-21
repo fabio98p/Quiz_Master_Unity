@@ -5,16 +5,10 @@ using UnityEngine;
 
 public class ScoreKeeper : MonoBehaviour
 {
-    //int correctAnswers = 0;
-    //int questionSeen = 0;
+
 
     public int correctAnswers { get; set; }
     public int questionSeen { get; set; }
-    //public int correctAnswers
-    //{
-    //    get { return correctAnswers; }
-    //    set { correctAnswers = value; }
-    //}
 
     private void Start()
     {
